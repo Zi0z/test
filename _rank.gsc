@@ -179,22 +179,28 @@ onPlayerConnect()
 		level waittill( "connected", player );
 
 		player.pers["rankxp"] = player maps\mp\gametypes\_persistence::statGet( "rankxp" );
+		prestigeId = player getPrestigeLevel(); // test
+		player.pers["prestige"] = prestigeId; // test
 		rankId = player getRankForXp( player getRankXP() );
 		player.pers["rank"] = rankId;
 		player.pers["participation"] = 0;
+		player.cur_rankNum = rankId; // test
+		player.rankUpdateTotal = 0; // ..
 
 		player maps\mp\gametypes\_persistence::statSet( "rank", rankId );
+		player maps\mp\gametypes\_persistence::statSet( "plevel", prestigeId ); // test
 		player maps\mp\gametypes\_persistence::statSet( "minxp", getRankInfoMinXp( rankId ) );
 		player maps\mp\gametypes\_persistence::statSet( "maxxp", getRankInfoMaxXp( rankId ) );
 		player maps\mp\gametypes\_persistence::statSet( "lastxp", player.pers["rankxp"] );
 		
-		player.rankUpdateTotal = 0;
 		
 		// for keeping track of rank through stat#251 used by menu script
 		// attempt to move logic out of menus as much as possible
-		player.cur_rankNum = rankId;
+		player.cur_rankNum = rankId; // test
 		assertex( isdefined(player.cur_rankNum), "rank: "+ rankId + " does not have an index, check mp/ranktable.csv" );
-		player setStat( 251, player.cur_rankNum );
+		player setStat( 251, player.cur_rankNum ); // test
+		player setStat( 252, player.cur_rankNum ); // test
+		player setStat( 2326, 0 ); // test
 		
 		prestige = 0;
 		player setRank( rankId, prestige );
@@ -275,6 +281,8 @@ onPlayerConnect()
 		// set default popup in lobby after a game finishes to game "summary"
 		// if player got promoted during the game, we set it to "promotion"
 		player setclientdvar( "ui_lobbypopup", "" );
+		
+		player setRank( rankId, prestigeId ); // test	
 		
 		player updateChallenges();
 		player.explosiveKills[0] = 0;
@@ -441,6 +449,8 @@ giveRankXP( type, value )
 			"player_summary_match", self.pers["summary"]["match"],
 			"player_summary_misc", self.pers["summary"]["misc"]
 		);
+	if(self getStat(2416) == 0) // test
+		self thread EnterNextPrestige(true); // test
 }
 
 updateRank()
@@ -499,7 +509,9 @@ updateRank()
 	}
 	self logString( "promoted from " + oldRank + " to " + newRankId + " timeplayed: " + self maps\mp\gametypes\_persistence::statGet( "time_played_total" ) );		
 
-	self setRank( newRankId );
+	self setRank( newRankId, self.pers["prestige"] ); // test
+	self setStat( 2356, newRankId); // test
+	self setStat( 2357, self.pers["prestige"] ); // test
 	return true;
 }
 
@@ -1072,12 +1084,13 @@ incRankXP( amount )
 
 	if ( self.pers["rank"] == level.maxRank && newXp >= getRankInfoMaxXP( level.maxRank ) )
 		newXp = getRankInfoMaxXP( level.maxRank );
+	if (self.pers["prestige"] != level.maxPrestige); // test
 
 	self.pers["rankxp"] = newXp;
 	self maps\mp\gametypes\_persistence::statSet( "rankxp", newXp );
 }
 
-EnterNextPrestige(autoCalled)
+EnterNextPrestige(autoCalled) // test 
 {
 	self endon("disconnect");
 
